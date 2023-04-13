@@ -1,6 +1,6 @@
 <template>
   <div class="todo-list">
-        <todo-list-item v-for="n in 3" :key="n"></todo-list-item>  
+        <todo-list-item :todos="item"  v-for="item in todos" :key="item.id"></todo-list-item>  
     </div>
 </template>
 
@@ -8,7 +8,8 @@
 import TodoListItem from './TodoListItem.vue';
 export default {
     name:'TodoList',
-    components:{TodoListItem}
+    components:{TodoListItem},
+    props:['todos']
 }
 </script>
 

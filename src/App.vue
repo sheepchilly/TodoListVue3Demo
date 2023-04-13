@@ -2,14 +2,15 @@
   <main>
     <div class="container">
       <h1>欢迎使用 sheep 待办事项</h1>
-      <todo-add />
-      <todo-filter></todo-filter>
-      <todo-list />
+      <todo-add @addTodo="addTodo" :tid="todos.length"/>
+      <todo-filter :selected="filter" @change-filter="filter = $event"/>
+      <todo-list :todos="filteredTodos"/>
     </div>
   </main>
 </template>
 
 <script>
+import {reactive,provide,ref,watch,nextTick,computed} from 'vue';
 import TodoAdd from "./components/TodoAdd.vue";
 import TodoFilter from "./components/TodoFilter.vue";
 import TodoList from "./components/TodoList.vue";
@@ -21,6 +22,54 @@ export default {
     TodoFilter,
     TodoList,
   },
+  setup(props,context){
+    //这样读取空数组会报错，试一下vuex存
+    let todos = reactive([
+      // JSON.parse(localStorage.getItem('todos')) 
+
+      // {id:'001',title:'吃饭',done:false},
+      // {id:'002',title:'睡觉',done:true},
+      // {id:'003',title:'打豆豆',done:true}
+  ]) 
+    // watch(todos,()=>{
+    //   nextTick(()=>{
+    //   console.log('我存储了信息')
+    //   localStorage.setItem('todos',JSON.stringify(todos))
+    // })
+    // },{deep:true})
+
+    const filter = ref('all');
+    const filteredTodos = computed(()=>{
+      switch(filter.value){
+        case "done":
+          return todos.filter(todo=>todo.done);
+        case "todo":
+          return todos.filter(todo=>!todo.done)
+        default:
+          return todos
+      }
+    })
+
+    function handleCheck(todo){
+        reactive(todos.filter(item=>{
+          return item.id === todo.id
+        }))
+    }
+    provide('handleCheck',handleCheck)
+
+    function addTodo(newTodo){
+      todos.unshift(newTodo)
+    }
+
+    return{
+      todos,
+      handleCheck,
+      addTodo,
+      filter,
+      filteredTodos
+    }
+  }
+
 };
 </script>
 
@@ -98,21 +147,7 @@ h1 {
   /* 设置成不平铺，剩下的50%的空间就不会显示背景了 */
   background-repeat: no-repeat;
 }
-.filters {
-  display: flex;
-  margin: 24px 2px;
-  color: #c0c2ce;
-  font-size: 14px;
-}
-.filters .filter {
-  margin-right: 14px;
-  transition: 0.8s;
-}
-.filters .filter.active {
-  color: #6b729c;
-  /* 放大1.2倍 */
-  transform: scale(1.2);
-}
+
 .todo-list {
   /* 设置成grid布局方便设置每一个todoItem的间距 */
   display: grid;
